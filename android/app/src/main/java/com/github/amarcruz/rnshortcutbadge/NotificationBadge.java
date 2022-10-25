@@ -1,4 +1,4 @@
-package com.quydd.rnshortcutbadge;
+package com.github.amarcruz.rnshortcutbadge;
 
 import android.annotation.TargetApi;
 import android.content.AsyncQueryHandler;
@@ -22,7 +22,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import android.content.Context;
 
 public class NotificationBadge {
 

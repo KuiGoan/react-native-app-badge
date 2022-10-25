@@ -1,4 +1,4 @@
-package com.quydd.rnshortcutbadge;
+package com.github.amarcruz.rnshortcutbadge;
 
 import android.content.Context;
 import android.content.Intent;
