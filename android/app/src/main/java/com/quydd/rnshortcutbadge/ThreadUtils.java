@@ -1,4 +1,4 @@
-package com.github.amarcruz.rnshortcutbadge;
+package com.quydd.rnshortcutbadge;
 
 import android.os.Handler;
 import android.os.Looper;
