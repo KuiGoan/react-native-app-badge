@@ -2,7 +2,7 @@
  https://github.com/leolin310148/ShortcutBadger
  */
 
-package org.telegram.messenger;
+package com.github.amarcruz.rnshortcutbadge;
 
 import android.annotation.TargetApi;
 import android.content.AsyncQueryHandler;
@@ -33,6 +33,7 @@ public class NotificationBadge {
     private static boolean initied;
     private static Badger badger;
     private static ComponentName componentName;
+    private ReactApplicationContext mReactContext;
 
     public interface Badger {
         void executeBadge(int badgeCount);
@@ -55,7 +56,7 @@ public class NotificationBadge {
             intent.putExtra(CLASSNAME, componentName.getClassName());
             intent.putExtra(COUNT, badgeCount);
             if (canResolveBroadcast(intent)) {
-                AndroidUtilities.runOnUIThread(() -> ApplicationLoader.applicationContext.sendBroadcast(intent));
+                ThreadUtils.runOnUIThread(() -> mReactContext.sendBroadcast(intent));
             }
         }
 
@@ -83,7 +84,7 @@ public class NotificationBadge {
             intent.putExtra(COUNT, badgeCount);
             intent.putExtra(CLASS, componentName.getClassName());
             if (canResolveBroadcast(intent)) {
-                AndroidUtilities.runOnUIThread(() -> ApplicationLoader.applicationContext.sendBroadcast(intent));
+                ThreadUtils.runOnUIThread(() -> mReactContext.sendBroadcast(intent));
             }
         }
 
@@ -108,7 +109,7 @@ public class NotificationBadge {
             intent.putExtra(INTENT_EXTRA_ACTIVITY_NAME, componentName.getClassName());
             intent.putExtra("badge_vip_count", 0);
             if (canResolveBroadcast(intent)) {
-                AndroidUtilities.runOnUIThread(() -> ApplicationLoader.applicationContext.sendBroadcast(intent));
+                ThreadUtils.runOnUIThread(() -> mReactContext.sendBroadcast(intent));
             }
         }
 
@@ -130,9 +131,9 @@ public class NotificationBadge {
             intent.putExtra(INTENT_EXTRA_BADGE_COUNT, badgeCount);
             intent.putExtra(INTENT_EXTRA_PACKAGENAME, componentName.getPackageName());
             intent.putExtra(INTENT_EXTRA_ACTIVITY_NAME, componentName.getClassName());
-            AndroidUtilities.runOnUIThread(() -> {
+            ThreadUtils.runOnUIThread(() -> {
                 try {
-                    ApplicationLoader.applicationContext.sendBroadcast(intent);
+                    mReactContext.sendBroadcast(intent);
                 } catch (Exception ignore) {
 
                 }
@@ -154,12 +155,12 @@ public class NotificationBadge {
         @Override
         public void executeBadge(int badgeCount) {
             final Bundle localBundle = new Bundle();
-            localBundle.putString("package", ApplicationLoader.applicationContext.getPackageName());
+            localBundle.putString("package", mReactContext.getPackageName());
             localBundle.putString("class", componentName.getClassName());
             localBundle.putInt("badgenumber", badgeCount);
-            AndroidUtilities.runOnUIThread(() -> {
+            ThreadUtils.runOnUIThread(() -> {
                 try {
-                    ApplicationLoader.applicationContext.getContentResolver().call(Uri.parse("content://com.huawei.android.launcher.settings/badge/"), "change_badge", null, localBundle);
+                    mReactContext.getContentResolver().call(Uri.parse("content://com.huawei.android.launcher.settings/badge/"), "change_badge", null, localBundle);
                 } catch (Exception e) {
                     FileLog.e(e);
                 }
@@ -195,9 +196,9 @@ public class NotificationBadge {
             intent.putExtra(COUNT, badgeCount);
 
             if (canResolveBroadcast(intent1) || canResolveBroadcast(intent)) {
-                AndroidUtilities.runOnUIThread(() -> {
-                    ApplicationLoader.applicationContext.sendBroadcast(intent1);
-                    ApplicationLoader.applicationContext.sendBroadcast(intent);
+                ThreadUtils.runOnUIThread(() -> {
+                    mReactContext.sendBroadcast(intent1);
+                    mReactContext.sendBroadcast(intent);
                 });
             }
         }
@@ -219,7 +220,7 @@ public class NotificationBadge {
             ContentValues contentValues = new ContentValues();
             contentValues.put(TAG, componentName.getPackageName() + "/" + componentName.getClassName());
             contentValues.put(COUNT, badgeCount);
-            ApplicationLoader.applicationContext.getContentResolver().insert(Uri.parse(CONTENT_URI), contentValues);
+            mReactContext.getContentResolver().insert(Uri.parse(CONTENT_URI), contentValues);
         }
 
         @Override
@@ -257,7 +258,7 @@ public class NotificationBadge {
             try {
                 Bundle extras = new Bundle();
                 extras.putInt(INTENT_EXTRA_BADGEUPGRADE_COUNT, badgeCount);
-                ApplicationLoader.applicationContext.getContentResolver().call(Uri.parse(PROVIDER_CONTENT_URI), "setAppBadgeCount", null, extras);
+                mReactContext.getContentResolver().call(Uri.parse(PROVIDER_CONTENT_URI), "setAppBadgeCount", null, extras);
             } catch (Throwable ignored) {
 
             }
@@ -282,7 +283,7 @@ public class NotificationBadge {
             }
 
             Uri mUri = Uri.parse(CONTENT_URI);
-            ContentResolver contentResolver = ApplicationLoader.applicationContext.getContentResolver();
+            ContentResolver contentResolver = mReactContext.getContentResolver();
             Cursor cursor = null;
             try {
                 cursor = contentResolver.query(mUri, CONTENT_PROJECTION, "package=?", new String[]{componentName.getPackageName()}, null);
@@ -366,7 +367,7 @@ public class NotificationBadge {
             intent.putExtra(INTENT_EXTRA_ACTIVITY_NAME, componentName.getClassName());
             intent.putExtra(INTENT_EXTRA_MESSAGE, String.valueOf(badgeCount));
             intent.putExtra(INTENT_EXTRA_SHOW_MESSAGE, badgeCount > 0);
-            AndroidUtilities.runOnUIThread(() -> ApplicationLoader.applicationContext.sendBroadcast(intent));
+            ThreadUtils.runOnUIThread(() -> mReactContext.sendBroadcast(intent));
         }
 
         private void executeBadgeByContentProvider(int badgeCount) {
@@ -375,7 +376,7 @@ public class NotificationBadge {
             }
 
             if (mQueryHandler == null) {
-                mQueryHandler = new AsyncQueryHandler(ApplicationLoader.applicationContext.getApplicationContext().getContentResolver()) {
+                mQueryHandler = new AsyncQueryHandler(mReactContext.getApplicationContext().getContentResolver()) {
 
                     @Override
                     public void handleMessage(Message msg) {
@@ -400,7 +401,7 @@ public class NotificationBadge {
 
         private static boolean sonyBadgeContentProviderExists() {
             boolean exists = false;
-            ProviderInfo info = ApplicationLoader.applicationContext.getPackageManager().resolveContentProvider(SONY_HOME_PROVIDER_NAME, 0);
+            ProviderInfo info = mReactContext.getPackageManager().resolveContentProvider(SONY_HOME_PROVIDER_NAME, 0);
             if (info != null) {
                 exists = true;
             }
@@ -427,10 +428,10 @@ public class NotificationBadge {
                 localIntent.putExtra(EXTRA_UPDATE_APP_COMPONENT_NAME, componentName.getPackageName() + "/" + componentName.getClassName());
                 localIntent.putExtra(EXTRA_UPDATE_APP_MSG_TEXT, String.valueOf(badgeCount == 0 ? "" : badgeCount));
                 if (canResolveBroadcast(localIntent)) {
-                    AndroidUtilities.runOnUIThread(new Runnable() {
+                    ThreadUtils.runOnUIThread(new Runnable() {
                         @Override
                         public void run() {
-                            ApplicationLoader.applicationContext.sendBroadcast(localIntent);
+                            mReactContext.sendBroadcast(localIntent);
                         }
                     });
                 }
@@ -459,9 +460,9 @@ public class NotificationBadge {
         public void executeBadge(int badgeCount) {
             final Bundle extra = new Bundle();
             extra.putInt("app_badge_count", badgeCount);
-            AndroidUtilities.runOnUIThread(() -> {
+            ThreadUtils.runOnUIThread(() -> {
                 try {
-                    ApplicationLoader.applicationContext.getContentResolver().call(CONTENT_URI, "setAppBadgeCount", null, extra);
+                    mReactContext.getContentResolver().call(CONTENT_URI, "setAppBadgeCount", null, extra);
                 } catch (Exception e) {
                     FileLog.e(e);
                 }
@@ -479,10 +480,10 @@ public class NotificationBadge {
         @Override
         public void executeBadge(int badgeCount) {
             Intent intent = new Intent("launcher.action.CHANGE_APPLICATION_NOTIFICATION_NUM");
-            intent.putExtra("packageName", ApplicationLoader.applicationContext.getPackageName());
+            intent.putExtra("packageName", mReactContext.getPackageName());
             intent.putExtra("className", componentName.getClassName());
             intent.putExtra("notificationNum", badgeCount);
-            ApplicationLoader.applicationContext.sendBroadcast(intent);
+            mReactContext.sendBroadcast(intent);
         }
 
         @Override
@@ -506,7 +507,10 @@ public class NotificationBadge {
         BADGERS.add(VivoHomeBadger.class);
     }
 
-    public static boolean applyCount(int badgeCount) {
+    public static boolean applyCount(ReactApplicationContext context, int badgeCount) {
+        if (mReactContext != context) {
+            mReactContext = context
+        }
         try {
             if (badger == null && !initied) {
                 initBadger();
@@ -523,7 +527,7 @@ public class NotificationBadge {
     }
 
     private static boolean initBadger() {
-        Context context = ApplicationLoader.applicationContext;
+        Context context = mReactContext;
         Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
         if (launchIntent == null) {
             return false;
@@ -593,7 +597,7 @@ public class NotificationBadge {
     }
 
     private static boolean canResolveBroadcast(Intent intent) {
-        PackageManager packageManager = ApplicationLoader.applicationContext.getPackageManager();
+        PackageManager packageManager = mReactContext.getPackageManager();
         List<ResolveInfo> receivers = packageManager.queryBroadcastReceivers(intent, 0);
         return receivers != null && receivers.size() > 0;
     }

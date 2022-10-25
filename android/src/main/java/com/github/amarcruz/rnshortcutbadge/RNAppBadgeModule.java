@@ -28,6 +28,6 @@ public class RNAppBadgeModule extends ReactContextBaseJavaModule {
             return;
         }
         lastBadgeCount = count;
-        NotificationBadge.applyCount(count);
+        NotificationBadge.applyCount(mReactContext, count);
     }
 }
