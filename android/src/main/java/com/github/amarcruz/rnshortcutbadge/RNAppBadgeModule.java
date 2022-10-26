@@ -83,14 +83,14 @@ public class RNAppBadgeModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void setCount(final int count, final Promise promise) {
         try {
-            Log.d(TAG, "setCount " + count);
+            Log.d(TAG, "setCount " + count + ", mSupported " + mSupported);
             // Save the counter unconditionally
             mPrefs.edit().putInt(BADGE_KEY, count).apply();
 
-            if (!mSupported) {
-                promise.resolve(false);
-                return;
-            }
+//            if (!mSupported) {
+//                promise.resolve(false);
+//                return;
+//            }
 
             Context context = getCurrentActivity();
             if (context == null) {
