@@ -21,7 +21,7 @@ def _targetSdkVersion   = rootProject.hasProperty('targetSdkVersion')  ? rootPro
 buildscript {
     repositories {
         google()
-        jcenter()
+        mavenCentral()
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:7.3.1'
@@ -46,9 +46,8 @@ android {
 }
 
 repositories {
-    mavenCentral()
     google()
-    jcenter()
+    mavenCentral()
     maven {
         url "$rootDir/../node_modules/react-native/android"
         name 'React Native (local)'
@@ -56,6 +55,5 @@ repositories {
 }
 
 dependencies {
-
-  compileOnly 'com.facebook.react:react-native:+'
+    implementation 'com.facebook.react:react-native:+'
 }
